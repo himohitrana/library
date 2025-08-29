@@ -1,51 +1,55 @@
-name: Laravel CI/CD
+name: LaravelAPI CI/CD
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Cache Composer Dependencies
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-composer-
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, bcmath, mysql
+          coverage: none
 
-    - name: Install Dependencies
-      run: |
-        composer install --quiet --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Directory Permissions
-      run: chmod -R 775 storage bootstrap/cache
+      - name: Copy .env
+        run: cp .env.example .env
 
-    - name: FTP Deploy to Staging
-      uses: SamKirkland/FTP-Deploy-Action@4.0.0
-      with:
-        server: 62.72.28.24
-        username: u919013155
-        password: =n>YX8zL&?V0hdA0
-        serverPort: 21
-        localDir: ./  # Path to your local directory to deploy
-        remoteDir: /domains/mohitrana.com/public_html/library/  # Remote directory to deploy to
-        exclude: |
-          vendor
-          .env
-          node_modules
-          tests
-          .git
+      - name: Generate app key
+        run: php artisan key:generate
 
-    - name: Run php artisan storage:link
-      run: php artisan storage:link
+  deploy:
+    name: Deploy to FTP Server
+    needs: laravel-tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: 62.72.28.24
+          username: u919013155
+          password: "=n>YX8zL&?V0hdA0"
+          protocol: ftp
+          local-dir: ./
+          server-dir: /domains/mohitrana.com/public_html/library/
+          exclude: |
+            vendor/**
+            .git*
+            node_modules/**
