@@ -1,0 +1,530 @@
+openapi: 3.0.3
+info:
+  title: Android Backend API
+  version: "1.0.0"
+  description: |
+    OpenAPI specification for the Android Backend API.
+
+    - Authentication uses Laravel Sanctum tokens via Bearer Authorization header.
+    - Some endpoints require admin role. See notes on each path.
+servers:
+  - url: http://localhost/api
+    description: Local API base (Apache/Nginx)
+  - url: http://localhost:8000/api
+    description: Local API base (php artisan serve)
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+        phone: { type: string, nullable: true }
+        address: { type: string, nullable: true }
+    CategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+    BookRequest:
+      type: object
+      required: [title, author, category_id, stock, status]
+      properties:
+        title: { type: string }
+        author: { type: string }
+        category_id: { type: integer }
+        description: { type: string, nullable: true }
+        cover_url: { type: string, nullable: true }
+        price_sale: { type: number, nullable: true }
+        price_rent: { type: number, nullable: true }
+        stock: { type: integer, minimum: 0 }
+        status:
+          type: string
+          enum: [available, unavailable]
+    CartCreateRequest:
+      type: object
+      required: [book_id, mode, quantity]
+      properties:
+        book_id: { type: integer }
+        mode:
+          type: string
+          description: "Accepted: rent, sale, sale|rent, rent|sale"
+        rental_days: { type: integer, nullable: true, minimum: 1 }
+        quantity: { type: integer, minimum: 1 }
+        guest_id: { type: string, nullable: true }
+    CartUpdateRequest:
+      type: object
+      required: [quantity]
+      properties:
+        rental_days: { type: integer, nullable: true, minimum: 1 }
+        quantity: { type: integer, minimum: 1 }
+    EnquiryCreateRequest:
+      type: object
+      required: [items]
+      properties:
+        guest_info: { type: object, additionalProperties: true, nullable: true }
+        items: { type: array, items: { type: object } }
+        status: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        total_amount: { type: number, nullable: true }
+    EnquiryUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+        admin_notes: { type: string, nullable: true }
+    RentalCreateRequest:
+      type: object
+      required: [book_id, start_date, due_date, status, amount]
+      properties:
+        enquiry_id: { type: integer, nullable: true }
+        user_id: { type: integer, nullable: true }
+        book_id: { type: integer }
+        start_date: { type: string, format: date }
+        due_date: { type: string, format: date }
+        status: { type: string }
+        amount: { type: number }
+        condition_notes: { type: string, nullable: true }
+    SaleCreateRequest:
+      type: object
+      required: [book_id, status, amount]
+      properties:
+        enquiry_id: { type: integer, nullable: true }
+        user_id: { type: integer, nullable: true }
+        book_id: { type: integer }
+        status: { type: string }
+        amount: { type: number }
+    SaleUpdateRequest:
+      type: object
+      required: [status, amount]
+      properties:
+        status: { type: string }
+        amount: { type: number }
+paths:
+  /auth/register:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200': { description: Registered, content: { application/json: { schema: { type: object } } } }
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /auth/forgot-password:
+    post:
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses:
+        '200': { description: OK }
+  /auth/reset-password:
+    post:
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+      responses:
+        '200': { description: OK }
+  /auth/logout:
+    post:
+      summary: Logout
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+  /auth/user:
+    get:
+      summary: Current user
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+
+  /categories:
+    get:
+      summary: List categories (paginated)
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create category (admin)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryRequest' }
+      responses:
+        '201': { description: Created }
+  /categories/{category}:
+    get:
+      summary: Get category
+      parameters:
+        - in: path
+          name: category
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Update category (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: category
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryRequest' }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete category (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: category
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+
+  /books:
+    get:
+      summary: List books (paginated)
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: category_id
+          schema: { type: integer }
+        - in: query
+          name: status
+          schema: { type: string, enum: [available, unavailable] }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create book (admin)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookRequest' }
+      responses:
+        '201': { description: Created }
+  /books/{book}:
+    get:
+      summary: Get book
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Update book (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookRequest' }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete book (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+
+  /wishlist:
+    get:
+      summary: List wishlist (user)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+  /wishlist/{book}:
+    post:
+      summary: Add to wishlist (user)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Remove from wishlist (user)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+  /wishlist/{book}/check:
+    get:
+      summary: Check wishlist (user)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: book
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+
+  /cart:
+    get:
+      summary: Get cart (user or guest)
+      parameters:
+        - in: query
+          name: guest_id
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Add item to cart (user or guest)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CartCreateRequest' }
+      responses:
+        '201': { description: Created }
+    delete:
+      summary: Clear cart (user or guest)
+      parameters:
+        - in: query
+          name: guest_id
+          schema: { type: string }
+      responses:
+        '200': { description: Cleared }
+  /cart/{cart}:
+    put:
+      summary: Update cart item
+      parameters:
+        - in: path
+          name: cart
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CartUpdateRequest' }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete cart item
+      parameters:
+        - in: path
+          name: cart
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+
+  /enquiries:
+    get:
+      summary: List enquiries (auth)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create enquiry (public or auth)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnquiryCreateRequest' }
+      responses:
+        '201': { description: Created }
+  /enquiries/{enquiry}:
+    get:
+      summary: Get enquiry (auth)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: enquiry
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Update enquiry (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: enquiry
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnquiryUpdateRequest' }
+      responses:
+        '200': { description: OK }
+
+  /rentals:
+    get:
+      summary: List rentals (auth)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create rental (admin)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RentalCreateRequest' }
+      responses:
+        '201': { description: Created }
+  /rentals/{rental}:
+    get:
+      summary: Get rental (auth)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: rental
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+  /rentals/{rental}/return:
+    put:
+      summary: Mark rental returned (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: rental
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                condition_notes: { type: string, nullable: true }
+      responses:
+        '200': { description: OK }
+  /rentals/stats:
+    get:
+      summary: Rentals stats (admin)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+
+  /sales:
+    get:
+      summary: List sales (admin)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create sale (admin)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaleCreateRequest' }
+      responses:
+        '201': { description: Created }
+  /sales/{sale}:
+    get:
+      summary: Get sale (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: sale
+          schema: { type: integer }
+          required: true
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Update sale (admin)
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: sale
+          schema: { type: integer }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaleUpdateRequest' }
+      responses:
+        '200': { description: OK }
+  /sales/stats:
+    get:
+      summary: Sales stats (admin)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+
+  /dashboard/stats:
+    get:
+      summary: Admin dashboard stats (admin)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
