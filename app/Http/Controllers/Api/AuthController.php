@@ -20,7 +20,7 @@ class AuthController extends Controller
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
         ]);
-        // Create new user and assign role "user" 
+        // Create new user and assign role  "user" 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
