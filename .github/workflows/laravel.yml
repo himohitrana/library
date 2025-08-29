@@ -22,12 +22,6 @@ jobs:
       - name: Install Composer dependencies (no dev)
         run: composer install --no-dev --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
-      - name: Copy .env
-        run: cp .env.example .env
-
-      - name: Generate app key
-        run: php artisan key:generate
-
       # (optional) run php artisan commands safely here
       - name: Clear caches
         run: |
@@ -61,3 +55,4 @@ jobs:
             vendor/**
             .git*
             node_modules/**
+            .env
