@@ -19,14 +19,22 @@ jobs:
           extensions: mbstring, bcmath, mysql
           coverage: none
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Install Composer dependencies (no dev)
+        run: composer install --no-dev --prefer-dist --no-progress --no-suggest --optimize-autoloader
 
       - name: Copy .env
         run: cp .env.example .env
 
       - name: Generate app key
         run: php artisan key:generate
+
+      # (optional) run php artisan commands safely here
+      - name: Clear caches
+        run: |
+          php artisan config:clear
+          php artisan cache:clear
+          php artisan route:clear
+          php artisan view:clear
 
   deploy:
     name: Deploy to FTP Server
@@ -37,7 +45,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Composer dependencies
+      - name: Install Composer dependencies (no dev)
         run: composer install --no-dev --optimize-autoloader
 
       - name: FTP Deploy
