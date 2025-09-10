@@ -11,8 +11,9 @@
       <tr>
         <th>Name</th>
         <th>Email</th>
+        <th>Status</th>
         <th>Role</th>
-        <th></th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
@@ -20,6 +21,7 @@
       <tr>
         <td>{{ $user->name }}</td>
         <td>{{ $user->email }}</td>
+        <td>{{ ucwords($user->status) }}</td>
         <td>{{ $user->getRoleNames()->implode(', ') }}</td>
         <td><a class="btn" href="{{ route('admin.users.edit', $user) }}">Edit</a></td>
       </tr>
