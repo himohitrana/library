@@ -34,6 +34,17 @@
         <label>Address</label>
         <input class="input" type="text" name="address" value="{{ old('address', $user->address) }}" />
       </div>
+
+      <div>
+        <label>Status</label>
+        <select name="status" id="status">
+          <option value="active" {{ (old('status',$user->status)=='active'?'selected':'')) }}  >Active</option>
+          <option value="inactive" {{ (old('status',$user->status)=='inactive'?'selected':'')) }} >Inactive</option>
+          <option value="pending" {{ (old('status',$user->status)=='pending'?'selected':'')) }} >Pending</option>
+          <option value="block" {{ (old('status',$user->status)=='block'?'selected':'')) }} >Blocked</option>
+        </select>
+      </div>
+
     </div>
     <div style="margin-top:12px">
       <button class="btn primary">Update</button>

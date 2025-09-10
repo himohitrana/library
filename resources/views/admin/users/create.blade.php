@@ -33,6 +33,16 @@
         <label>Address</label>
         <input class="input" type="text" name="address" value="{{ old('address') }}" />
       </div>
+
+      <div>
+        <label>Status</label>
+        <select name="status" id="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
+          <option value="block">Blocked</option>
+        </select>
+      </div>
     </div>
     <div style="margin-top:12px">
       <button class="btn primary">Save</button>

@@ -28,6 +28,7 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
+            'status' => 'required|in:pending,active,block,inactive',
             'role' => 'required|in:admin,user',
         ]);
         $data['password'] = Hash::make($data['password']);
@@ -49,6 +50,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6',
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
+            'status' => 'required|in:pending,active,block,inactive',
             'role' => 'required|in:admin,user',
         ]);
         if (!empty($data['password'])) {
