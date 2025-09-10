@@ -27,6 +27,7 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,
+            'status' => 'pending',
         ]);
         $user->syncRoles(['user']);
 
