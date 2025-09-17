@@ -49,6 +49,9 @@ Route::get('books', [BookController::class, 'index']);
 Route::get('books/{book}', [BookController::class, 'show']);
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('books', [BookController::class, 'store']);
+    Route::post('book/set/on/sale', [BookController::class, 'setBookOnSale']);
+    Route::post('book/set/on/rental', [BookController::class, 'setBookOnRental']);
+    Route::post('book/status/change', [BookController::class, 'changestatus']);
     Route::put('books/{book}', [BookController::class, 'update']);
     Route::delete('books/{book}', [BookController::class, 'destroy']);
 });

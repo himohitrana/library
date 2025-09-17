@@ -44,7 +44,7 @@ class AuthController extends BaseApiController
         }
     }
 
-    public function login(Request $request)
+    public function login_old(Request $request)
     {
         try {
             $data = $request->validate([
@@ -68,6 +68,39 @@ class AuthController extends BaseApiController
             return $this->fromException($e);
         }
     }
+    public function login(Request $request)
+{
+    try {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        // Fetch user by email
+        $user = \App\Models\User::where('email', $data['email'])->first();
+
+        if (! $user || ! \Hash::check($data['password'], $user->password)) {
+            return $this->error('Invalid credentials', 401);
+        }
+
+        // Check user status
+        if ($user->status !== 'active') {
+            return $this->error('User is blocked/inactive, please contact admin', 403);
+        }
+
+        // Generate token if everything is fine
+        $token = $user->createToken('api')->plainTextToken;
+
+        return $this->success([
+            'token' => $token,
+            'user'  => $user,
+        ], 'Authenticated', 200);
+
+    } catch (\Throwable $e) {
+        return $this->fromException($e);
+    }
+}
+
 
     public function forgotPassword(Request $request)
     {
