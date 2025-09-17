@@ -16,6 +16,7 @@ class Book extends Model
         'category_id',
         'description',
         'cover_url',
+        'cover',
         'price_sale',
         'price_rent',
         'stock',
