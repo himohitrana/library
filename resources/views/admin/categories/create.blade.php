@@ -14,6 +14,10 @@
         <label>Description</label>
         <textarea class="input" name="description" rows="4">{{ old('description') }}</textarea>
       </div>
+      <div>
+        <label>Cover Image</label>
+        <input class="input" type="file" name="image" accept="image/*" />
+      </div>
     </div>
     <div style="margin-top:12px">
       <button class="btn primary">Save</button>

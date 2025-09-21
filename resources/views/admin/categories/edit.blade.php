@@ -15,6 +15,15 @@
         <label>Description</label>
         <textarea class="input" name="description" rows="4">{{ old('description', $category->description) }}</textarea>
       </div>
+
+      <div>
+        <label>Cover Image</label>
+        <input class="input" type="file" name="image" accept="image/*" />
+        @if($category->image)
+          <div class="muted" style="margin-top:6px">Current: <a href="{{ $category->image }}" target="_blank">View</a></div>
+        @endif
+      </div>
+
     </div>
     <div style="margin-top:12px">
       <button class="btn primary">Update</button>
