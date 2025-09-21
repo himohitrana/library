@@ -117,6 +117,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
             'active_rentals_count' => \App\Models\Rental::where('status', 'active')->count(),
             'overdue_rentals_count' => \App\Models\Rental::where('status', 'active')
                 ->where('due_date', '<', now())->count(),
+            'total_sales_count' => \App\Models\Sale::where('status', 'completed')->count(),
             'total_sales' => \App\Models\Sale::where('status', 'completed')->sum('amount'),
             'total_rental_income' => \App\Models\Rental::where('status', '!=', 'cancelled')->sum('amount'),
         ]);

@@ -32,8 +32,13 @@ class CategoryController extends BaseApiController
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120', // optional file upload
                 'description' => 'nullable|string',
             ]);
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('category', 'public');
+                $data['image'] = Storage::disk('public')->url($path);
+            }
             $category = Category::create($data);
             return $this->created($category, 'Category created');
         } catch (Throwable $e) {
@@ -46,8 +51,13 @@ class CategoryController extends BaseApiController
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120', // optional file upload
                 'description' => 'nullable|string',
             ]);
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('category', 'public');
+                $data['image'] = Storage::disk('public')->url($path);
+            }
             $category->update($data);
             return $this->success($category, 'Category updated', 200);
         } catch (Throwable $e) {
