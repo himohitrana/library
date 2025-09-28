@@ -43,8 +43,11 @@ class EnquiryController extends BaseApiController
                 'end_date' => 'nullable|date',
                 'return_date' => 'nullable|date',
             ]);
-            return response()->json(['data'=>$data,'user' => $request->user()], 200);
-            // $data['user_id'] = optional($request->user())->id;
+            if($request->user()){
+                $data['user_id'] = $request->user()->id;
+            } else {
+                $data['user_id'] = $request->user_id ?? null;
+            }
             $enquiry = Enquiry::create($data);
             return $this->created($enquiry, 'Enquiry created');
         } catch (Throwable $e) {
