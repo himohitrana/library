@@ -34,6 +34,7 @@ class EnquiryController extends BaseApiController
                 'guest_info' => 'nullable|array',
                 'type'  => 'required|string',
                 'book_id' => 'nullable|integer|exists:books,id',
+                'user_id' => 'nullable|integer|exists:users,id',
                 'items' => 'nullable|array',
                 'status' => 'nullable|string',
                 'notes' => 'nullable|string',
