@@ -11,9 +11,14 @@ class Enquiry extends Model
 
     protected $fillable = [
         'user_id',
+        'book_id',
+        'type',
         'guest_info',
         'items',
         'status',
+        'start_date',
+        'end_date',
+        'return_date',
         'notes',
         'admin_notes',
         'total_amount',
