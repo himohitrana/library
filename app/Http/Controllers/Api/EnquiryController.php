@@ -32,10 +32,16 @@ class EnquiryController extends BaseApiController
         try {
             $data = $request->validate([
                 'guest_info' => 'nullable|array',
-                'items' => 'required|array',
+                'type'  => 'required|string',
+                'book_id' => 'nullable|integer|exists:books,id',
+                'user_id' => 'nullable|integer|exists:users,id',
+                'items' => 'nullable|array',
                 'status' => 'nullable|string',
                 'notes' => 'nullable|string',
                 'total_amount' => 'nullable|numeric',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'return_date' => 'nullable|date',
             ]);
             $data['user_id'] = optional($request->user())->id;
             $enquiry = Enquiry::create($data);
