@@ -13,6 +13,12 @@ use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/terms-and-conditions', function () {
+    return view('terms_and_conditions');
+});
+Route::get('/privacy-policy', function () {
+    return view('privacy_policy');
+});
 
 // Admin auth
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login.form');
