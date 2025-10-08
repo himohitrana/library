@@ -200,9 +200,9 @@
       <p>If you have any questions or concerns about this Privacy Policy, please contact us:</p>
 
       <div class="contact" role="region" aria-label="Contact information">
-        {{-- <p><strong>Email:</strong> <em>[your support email]</em></p>
-        <p><strong>Phone:</strong> <em>[your contact number]</em></p> --}}
-        <!-- Address removed as requested -->
+        <p><strong>Name:</strong> Rajesh Seth</p>
+        <p><strong>Email:</strong> <a href="mailto:rajesh.seth@gmail.com">rajesh.seth@gmail.com</a></p>
+        <p><strong>Phone:</strong> <a href="tel:+917906696409">+91 7906696409</a></p>
       </div>
 
       <p class="footer-note">By using the App, you acknowledge that you have read and understood this Privacy Policy.</p>
