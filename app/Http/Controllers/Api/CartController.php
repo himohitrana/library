@@ -37,7 +37,7 @@ class CartController extends BaseApiController
         try {
             $data = $request->validate([
                 'book_id' => 'required|exists:books,id',
-                'mode' => 'required|in:rent, sale, sale|rent,rent|sale,sale|rent',
+                'mode' => 'required|string|in:rent,sale,rent_and_sale',
                 'rental_days' => 'nullable|integer|min:1',
                 'quantity' => 'required|integer|min:1',
                 'guest_id' => 'nullable|string',
