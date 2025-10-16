@@ -54,6 +54,7 @@ class CartController extends BaseApiController
                 'rental_days' => $data['rental_days'] ?? null,
                 'quantity' => $data['quantity'],
             ]);
+            
 
             return $this->created($cart->load('book'), 'Cart item added');
         } catch (Throwable $e) {
