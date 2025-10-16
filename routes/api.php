@@ -66,14 +66,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Cart (supports both authenticated and guest users)
 Route::get('cart', [CartController::class, 'index']);
-Route::post('cart', [CartController::class, 'store']);
-Route::put('cart/{cart}', [CartController::class, 'update']);
+
+
 Route::delete('cart/{cart}', [CartController::class, 'destroy']);
 Route::delete('cart', [CartController::class, 'clear']);
 
 // Enquiries
 Route::post('enquiries', [EnquiryController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('cart', [CartController::class, 'store']);
+    Route::put('cart/{cart}', [CartController::class, 'update']);
     Route::get('enquiries', [EnquiryController::class, 'index']);
     Route::get('enquiries/{enquiry}', [EnquiryController::class, 'show']);
     
