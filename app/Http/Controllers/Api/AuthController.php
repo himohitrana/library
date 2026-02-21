@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+// use Log
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends BaseApiController
 {
@@ -40,6 +42,7 @@ class AuthController extends BaseApiController
                 'user' => $user,
             ], 'Registered');
         } catch (Throwable $e) {
+            Log::info()->error('Registration error: ' . $e->getMessage(), ['exception' => $e]);
             return $this->fromException($e);
         }
     }
