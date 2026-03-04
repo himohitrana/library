@@ -30,11 +30,10 @@ class EnquiryController extends BaseApiController
 
     public function store(Request $request)
     {
-        // return response()->json(['message' => 'Enquiry creation is currently disabled. Please contact support.','data' => $request->all()], 503);
         try {
             $data = $request->validate([
                 'guest_info' => 'nullable|array',
-                'type'  => 'required|string',
+                'type'  => 'required|string|'.Rule::in(['rent', 'sale']),
                 'book_id' => 'nullable|array',
                 'book_id.*' => [
                     'integer'
@@ -44,9 +43,11 @@ class EnquiryController extends BaseApiController
                 'status' => 'nullable|string',
                 'notes' => 'nullable|string',
                 'total_amount' => 'nullable|numeric',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date',
-                'return_date' => 'nullable|date',
+                // if type is rent, then start_date and end_date are required
+                'start_date' => 'required_if:type,rent|nullable|date',
+                'end_date' => 'required_if:type,rent|nullable|date|after_or_equal:start_date',
+                // return_date is optional, but if provided, must be a date after or equal to end_date
+                'return_date' => 'nullable|date|after_or_equal:end_date',
             ]);
             if($request->user()){
                 $data['user_id'] = $request->user()->id;
