@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Enquiry;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class EnquiryController extends BaseApiController
@@ -29,11 +30,15 @@ class EnquiryController extends BaseApiController
 
     public function store(Request $request)
     {
+        // return response()->json(['message' => 'Enquiry creation is currently disabled. Please contact support.','data' => $request->all()], 503);
         try {
             $data = $request->validate([
                 'guest_info' => 'nullable|array',
                 'type'  => 'required|string',
-                'book_id' => 'nullable|integer|exists:books,id',
+                'book_id' => 'nullable|array',
+                'book_id.*' => [
+                    'integer'
+                ],
                 'user_id' => 'nullable|integer|exists:users,id',
                 'items' => 'nullable|array',
                 'status' => 'nullable|string',
@@ -48,6 +53,7 @@ class EnquiryController extends BaseApiController
             } else {
                 $data['user_id'] = $request->user_id ?? null;
             }
+            $data['book_id'] = json_encode($data['book_id']);
             $enquiry = Enquiry::create($data);
             return $this->created($enquiry, 'Enquiry created');
         } catch (Throwable $e) {

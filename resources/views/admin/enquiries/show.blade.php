@@ -7,7 +7,11 @@
   <div class="muted" style="margin-top:4px">Status: {{ ucfirst($enquiry->status) }}</div>
   <div class="muted" style="margin-top:4px">Total: ₹ {{ number_format($enquiry->total_amount,2) }}</div>
   <div style="margin-top:8px">
-    <pre style="white-space:pre-wrap">{{ json_encode($enquiry->items, JSON_PRETTY_PRINT) }}</pre>
+    <pre style="white-space:pre-wrap">{{ json_encode($enquiry->book_id, JSON_PRETTY_PRINT) }}</pre>
+    @php
+      // $bookTitles = App\Models\Book::whereIn('id',$enquiry->book_id)->pluck('title')->toArray();
+    @endphp
+    {{-- <div class="muted" style="margin-top:4px">Books: {{ implode(', ', $bookTitles) }}</div> --}}
   </div>
   <div class="muted" style="margin-top:8px">Notes: {{ $enquiry->notes }}</div>
   <div class="muted" style="margin-top:8px">Admin Notes: {{ $enquiry->admin_notes }}</div>
