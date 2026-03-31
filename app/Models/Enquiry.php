@@ -37,6 +37,11 @@ class Enquiry extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function books()
+    {
+        // in enquiry table, book_id is stored as json array of book ids, so we need to use belongsToMany with custom pivot table
+        return $this->belongsToMany(Book::class, 'enquiry_book', 'enquiry_id', 'book_id');
+    }
 
     /**
      * Get the rentals for this enquiry
