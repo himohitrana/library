@@ -12,7 +12,8 @@ class EnquiryController extends BaseApiController
     public function index(Request $request)
     {
         try {
-            $enquiries = Enquiry::with('user')->orderByDesc('id')->paginate(20);
+            $userId = optional($request->user())->id;
+            $enquiries = Enquiry::with('user')->where('user_id', $userId)->orderByDesc('id')->paginate(20);
             return $this->success($enquiries, 'Enquiries fetched', 200);
         } catch (Throwable $e) {
             return $this->fromException($e);
