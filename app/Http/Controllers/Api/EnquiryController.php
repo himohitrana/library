@@ -19,30 +19,19 @@ class EnquiryController extends BaseApiController
                 ->orderByDesc('id')
                 ->paginate(20);
 
-            // ✅ OPTIMIZED BOOK LOADING (no N+1)
+            // ✅ OPTIMIZE BOOKS
             $bookIds = collect($enquiries->items())
                 ->pluck('book_id')
-                ->map(function ($ids) {
-                    if (is_string($ids)) {
-                        return explode(',', $ids);
-                    }
-                    return $ids;
-                })
                 ->flatten()
-                ->filter()
                 ->unique();
 
             $books = \App\Models\Book::whereIn('id', $bookIds)
                 ->get()
                 ->keyBy('id');
 
-            $enquiries->getCollection()->transform(function ($enquiry) use ($books) {
+            $data = collect($enquiries->items())->map(function ($enquiry) use ($books) {
 
                 $ids = $enquiry->book_id;
-
-                if (is_string($ids)) {
-                    $ids = explode(',', $ids);
-                }
 
                 $enquiry->books = collect($ids)
                     ->map(fn($id) => $books[$id] ?? null)
@@ -52,7 +41,18 @@ class EnquiryController extends BaseApiController
                 return $enquiry;
             });
 
-            return $this->success($enquiries, 'Enquiries fetched', 200);
+            // ✅ CLEAN RESPONSE
+            return response()->json([
+                'success' => true,
+                'message' => 'Enquiries fetched',
+                'data' => $data,
+                'pagination' => [
+                    'current_page' => $enquiries->currentPage(),
+                    'last_page' => $enquiries->lastPage(),
+                    'per_page' => $enquiries->perPage(),
+                    'total' => $enquiries->total(),
+                ]
+            ]);
 
         } catch (\Throwable $e) {
             return $this->fromException($e);
