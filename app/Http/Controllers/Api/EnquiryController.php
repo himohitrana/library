@@ -13,7 +13,7 @@ class EnquiryController extends BaseApiController
     {
         try {
             $userId = optional($request->user())->id;
-            $enquiries = Enquiry::with('user')->where('user_id', $userId)->orderByDesc('id')->paginate(20);
+            $enquiries = Enquiry::with('user','books')->where('user_id', $userId)->orderByDesc('id')->paginate(20);
             return $this->success($enquiries, 'Enquiries fetched', 200);
         } catch (Throwable $e) {
             return $this->fromException($e);
