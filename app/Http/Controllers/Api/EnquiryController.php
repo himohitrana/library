@@ -19,9 +19,42 @@ class EnquiryController extends BaseApiController
                 ->orderByDesc('id')
                 ->paginate(20);
 
+            // ✅ OPTIMIZED BOOK LOADING (no N+1)
+            $bookIds = collect($enquiries->items())
+                ->pluck('book_id')
+                ->map(function ($ids) {
+                    if (is_string($ids)) {
+                        return explode(',', $ids);
+                    }
+                    return $ids;
+                })
+                ->flatten()
+                ->filter()
+                ->unique();
+
+            $books = \App\Models\Book::whereIn('id', $bookIds)
+                ->get()
+                ->keyBy('id');
+
+            $enquiries->getCollection()->transform(function ($enquiry) use ($books) {
+
+                $ids = $enquiry->book_id;
+
+                if (is_string($ids)) {
+                    $ids = explode(',', $ids);
+                }
+
+                $enquiry->books = collect($ids)
+                    ->map(fn($id) => $books[$id] ?? null)
+                    ->filter()
+                    ->values();
+
+                return $enquiry;
+            });
+
             return $this->success($enquiries, 'Enquiries fetched', 200);
 
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->fromException($e);
         }
     }

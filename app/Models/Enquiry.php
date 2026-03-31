@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Enquiry extends Model
 {
     use HasFactory;
-    protected $appends = ['books'];
 
     protected $fillable = [
         'user_id',
@@ -28,30 +27,41 @@ class Enquiry extends Model
     protected $casts = [
         'guest_info' => 'array',
         'items' => 'array',
+        'book_id' => 'array', // ✅ important
         'total_amount' => 'decimal:2',
     ];
+
+    protected $appends = ['books']; // ✅ auto include
+
+    /**
+     * Get Books (handles JSON + string both)
+     */
     public function getBooksAttribute()
     {
-        if (empty($this->book_id)) {
+        $bookIds = $this->book_id;
+
+        // handle string like "16,17"
+        if (is_string($bookIds)) {
+            $bookIds = explode(',', $bookIds);
+        }
+
+        if (!is_array($bookIds) || empty($bookIds)) {
             return collect();
         }
-        return \App\Models\Book::whereIn('id', $this->book_id)->get();
+
+        return Book::whereIn('id', $bookIds)->get();
     }
+
     /**
-     * Get the user that owns the enquiry
+     * User relation
      */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    public function books()
-    {
-        // in enquiry table, book_id is stored as json array of book ids, so we need to use belongsToMany with custom pivot table
-        return $this->belongsToMany(Book::class, 'books', 'id', 'book_id');
-    }
 
     /**
-     * Get the rentals for this enquiry
+     * Rentals
      */
     public function rentals()
     {
@@ -59,42 +69,25 @@ class Enquiry extends Model
     }
 
     /**
-     * Get the sales for this enquiry
+     * Sales
      */
     public function sales()
     {
         return $this->hasMany(Sale::class);
     }
 
-    /**
-     * Check if enquiry is from a guest
-     */
     public function isGuest()
     {
         return $this->user_id === null;
     }
 
-    /**
-     * Get customer name (user or guest)
-     */
     public function getCustomerNameAttribute()
     {
-        if ($this->user) {
-            return $this->user->name;
-        }
-        
-        return $this->guest_info['name'] ?? 'Guest';
+        return $this->user->name ?? ($this->guest_info['name'] ?? 'Guest');
     }
 
-    /**
-     * Get customer email (user or guest)
-     */
     public function getCustomerEmailAttribute()
     {
-        if ($this->user) {
-            return $this->user->email;
-        }
-        
-        return $this->guest_info['email'] ?? null;
+        return $this->user->email ?? ($this->guest_info['email'] ?? null);
     }
 }
