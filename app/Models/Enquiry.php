@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Enquiry extends Model
 {
     use HasFactory;
+    protected $appends = ['books'];
 
     protected $fillable = [
         'user_id',
@@ -29,7 +30,13 @@ class Enquiry extends Model
         'items' => 'array',
         'total_amount' => 'decimal:2',
     ];
-
+    public function getBooksAttribute()
+    {
+        if (empty($this->book_id)) {
+            return collect();
+        }
+        return \App\Models\Book::whereIn('id', $this->book_id)->get();
+    }
     /**
      * Get the user that owns the enquiry
      */
