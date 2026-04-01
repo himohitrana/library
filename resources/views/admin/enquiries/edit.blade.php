@@ -10,7 +10,7 @@
       <div>
         <label>Status</label>
         <select class="input" name="status" required>
-          @foreach(['new','processing','completed','cancelled'] as $s)
+          @foreach(['new', 'reviewed', 'approved', 'rejected'] as $s)
             <option value="{{ $s }}" @selected(old('status',$enquiry->status)===$s)>{{ ucfirst($s) }}</option>
           @endforeach
         </select>
