@@ -14,7 +14,7 @@ class EnquiryController extends BaseApiController
         try { 
             $userId = optional($request->user())->id;
 
-            
+
             $enquiries = Enquiry::with('user')
                 ->where('user_id', $userId)
                 ->orderByDesc('id')
@@ -37,7 +37,13 @@ class EnquiryController extends BaseApiController
             // ✅ STEP 3: Map books
             $data = collect($enquiries->items())->map(function ($enquiry) use ($books) {
 
-                $ids = json_decode($enquiry->book_id, true) ?? [];
+                $ids = json_decode($enquiry->book_id, true);
+
+                if (is_string($ids)) {
+                    $ids = json_decode($ids, true);
+                }
+
+                $ids = $ids ?? [];
 
                 $enquiry->books = collect($ids)
                     ->map(fn($id) => $books[$id] ?? null)
@@ -99,7 +105,7 @@ class EnquiryController extends BaseApiController
             } else {
                 $data['user_id'] = $request->user_id ?? null;
             }
-            $data['book_id'] = json_encode($data['book_id']);
+            // $data['book_id'] = json_encode($data['book_id']);
             $enquiry = Enquiry::create($data);
             return $this->created($enquiry, 'Enquiry created');
         } catch (Throwable $e) {
