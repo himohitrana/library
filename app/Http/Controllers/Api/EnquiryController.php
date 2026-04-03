@@ -11,9 +11,10 @@ class EnquiryController extends BaseApiController
 {
     public function index(Request $request)
     {
-        try {
+        try { 
             $userId = optional($request->user())->id;
 
+            
             $enquiries = Enquiry::with('user')
                 ->where('user_id', $userId)
                 ->orderByDesc('id')
