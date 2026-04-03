@@ -19,23 +19,26 @@ class EnquiryController extends BaseApiController
                 ->orderByDesc('id')
                 ->paginate(20);
 
-            // ✅ STEP 1: Collect all book IDs
+            // ✅ STEP 1: Collect book IDs
             $bookIds = collect($enquiries->items())
-                ->pluck('book_id')   // always array (thanks to cast)
+                ->pluck('book_id')
+                ->map(fn($item) => json_decode($item, true)) // 👈 FIX
                 ->flatten()
-                ->filter()           // remove null/empty
+                ->filter()
                 ->unique()
                 ->values();
 
-            // ✅ STEP 2: Fetch books in one query
+            // ✅ STEP 2: Fetch books
             $books = \App\Models\Book::whereIn('id', $bookIds)
                 ->get()
                 ->keyBy('id');
 
-            // ✅ STEP 3: Map books into each enquiry
+            // ✅ STEP 3: Map books
             $data = collect($enquiries->items())->map(function ($enquiry) use ($books) {
 
-                $enquiry->books = collect($enquiry->book_id ?? [])
+                $ids = json_decode($enquiry->book_id, true) ?? [];
+
+                $enquiry->books = collect($ids)
                     ->map(fn($id) => $books[$id] ?? null)
                     ->filter()
                     ->values();
@@ -43,7 +46,6 @@ class EnquiryController extends BaseApiController
                 return $enquiry;
             });
 
-            // ✅ FINAL RESPONSE
             return response()->json([
                 'success' => true,
                 'message' => 'Enquiries fetched',
