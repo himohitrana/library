@@ -31,7 +31,9 @@ class EnquiryController extends BaseApiController
 
             $data = collect($enquiries->items())->map(function ($enquiry) use ($books) {
 
-                $ids = $enquiry->book_id;
+                $ids = is_array($enquiry->book_id) 
+                        ? $enquiry->book_id 
+                        : [$enquiry->book_id];
 
                 $enquiry->books = collect($ids)
                     ->map(fn($id) => $books[$id] ?? null)
