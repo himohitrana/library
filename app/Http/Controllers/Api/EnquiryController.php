@@ -14,33 +14,53 @@ class EnquiryController extends BaseApiController
         try { 
             $userId = optional($request->user())->id;
 
-
             $enquiries = Enquiry::with('user')
                 ->where('user_id', $userId)
                 ->orderByDesc('id')
                 ->paginate(20);
 
-            // ✅ STEP 1: Collect book IDs
+            // ✅ STEP 1: Collect all book IDs (handle string + array दोनों)
             $bookIds = collect($enquiries->items())
                 ->pluck('book_id')
-                ->map(fn($item) => json_decode($item, true)) // 👈 FIX
+                ->map(function ($item) {
+
+                    // अगर already array है
+                    if (is_array($item)) {
+                        return $item;
+                    }
+
+                    // अगर string है
+                    $decoded = json_decode($item, true);
+
+                    // double encoded case
+                    if (is_string($decoded)) {
+                        $decoded = json_decode($decoded, true);
+                    }
+
+                    return $decoded ?? [];
+                })
                 ->flatten()
                 ->filter()
                 ->unique()
                 ->values();
 
-            // ✅ STEP 2: Fetch books
+            // ✅ STEP 2: Fetch books in single query
             $books = \App\Models\Book::whereIn('id', $bookIds)
                 ->get()
                 ->keyBy('id');
 
-            // ✅ STEP 3: Map books
+            // ✅ STEP 3: Map books to each enquiry
             $data = collect($enquiries->items())->map(function ($enquiry) use ($books) {
 
-                $ids = json_decode($enquiry->book_id, true);
+                $ids = $enquiry->book_id;
 
-                if (is_string($ids)) {
+                // अगर array है
+                if (!is_array($ids)) {
                     $ids = json_decode($ids, true);
+
+                    if (is_string($ids)) {
+                        $ids = json_decode($ids, true);
+                    }
                 }
 
                 $ids = $ids ?? [];
