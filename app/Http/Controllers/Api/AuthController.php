@@ -105,6 +105,76 @@ class AuthController extends BaseApiController
 }
 
 
+    public function changePassword(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:6|confirmed',
+            ]);
+
+            $user = $request->user();
+
+            if (! Hash::check($data['current_password'], $user->password)) {
+                return $this->error('Current password is incorrect', 400);
+            }
+
+            $user->update(['password' => Hash::make($data['new_password'])]);
+
+            return $this->success(null, 'Password changed successfully', 200);
+        } catch (Throwable $e) {
+            return $this->fromException($e);
+        }
+    }
+    public function updateProfile(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'name' => 'nullable|string|max:255',
+                'phone' => 'nullable|string',
+                'profile' => 'nullable|string', // comes in base64 format
+            ]);
+            $data['profile'] = $this->saveBase64Image($data['profile'] ?? null, 'profiles');
+            $user = $request->user();
+
+            $user->update($data);
+
+            return $this->success($user, 'Profile updated successfully', 200);
+        } catch (Throwable $e) {
+            return $this->fromException($e);
+        }
+    }
+
+    public function saveBase64Image($base64Image, $folder)
+    {
+        if (! $base64Image) {
+            return null;
+        }
+
+        try {
+            // Extract the file extension
+            preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches);
+            $extension = $matches[1] ?? 'png'; // default to png if not found
+
+            // Generate a unique filename
+            $filename = uniqid() . '.' . $extension;
+
+            // Decode the base64 string
+            $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $base64Image));
+
+            // Save the image to storage/app/public/{folder}
+            $path = "public/{$folder}/{$filename}";
+            \Storage::put($path, $imageData);
+
+            // Return the URL to the saved image
+            return \Storage::url("{$folder}/{$filename}");
+        } catch (\Throwable $e) {
+            Log::error('Error saving base64 image: ' . $e->getMessage(), ['exception' => $e]);
+            return null;
+        }
+    }
+
+
     public function forgotPassword(Request $request)
     {
         try {
