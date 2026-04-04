@@ -110,7 +110,7 @@ class AuthController extends BaseApiController
         try {
             $data = $request->validate([
                 'current_password' => 'required|string',
-                'new_password' => 'required|string|min:6|confirmed',
+                'password' => 'required|string|min:6|confirmed',
             ]);
 
             $user = $request->user();
@@ -132,9 +132,9 @@ class AuthController extends BaseApiController
             $data = $request->validate([
                 'name' => 'nullable|string|max:255',
                 'phone' => 'nullable|string',
-                'profile' => 'nullable|string', // comes in base64 format
+                'avatar' => 'nullable|string', // comes in base64 format
             ]);
-            $data['profile'] = $this->saveBase64Image($data['profile'] ?? null, 'profiles');
+            $data['avatar'] = $this->saveBase64Image($data['avatar'] ?? null, 'avatars');
             $user = $request->user();
 
             $user->update($data);
