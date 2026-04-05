@@ -166,7 +166,7 @@ class AuthController extends BaseApiController
 
             // Save the image to storage/app/public/{folder}
             $path = "public/{$folder}/{$filename}";
-            \Storage::put($path, $imageData);
+            \Storage::disk('public')->put("{$folder}/{$filename}", $imageData);
 
             // Return the URL to the saved image
             return \Storage::url("{$folder}/{$filename}");
