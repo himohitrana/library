@@ -119,7 +119,7 @@ class AuthController extends BaseApiController
                 return $this->error('Current password is incorrect', 400);
             }
 
-            $user->update(['password' => Hash::make($data['new_password'])]);
+            $user->update(['password' => Hash::make($data['password'])]);
 
             return $this->success(null, 'Password changed successfully', 200);
         } catch (Throwable $e) {
