@@ -93,7 +93,7 @@ class AuthController extends BaseApiController
 
         // Generate token if everything is fine
         $token = $user->createToken('api')->plainTextToken;
-
+        $user->avatar = $user->avatar ? asset($user->avatar) : null;
         return $this->success([
             'token' => $token,
             'user'  => $user,
