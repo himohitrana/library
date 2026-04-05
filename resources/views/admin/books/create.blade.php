@@ -42,7 +42,7 @@
         <label>Stock</label>
         <input class="input" type="number" name="stock" value="{{ old('stock', 0) }}" min="0" required />
       </div>
-      <div>
+      <div style="display: none">
         <label>Cover Image</label>
         <input class="input" type="file" name="cover" accept="image/*" />
       </div>
