@@ -138,7 +138,8 @@ class AuthController extends BaseApiController
             $user = $request->user();
 
             $user->update($data);
-
+            // return updated user data with full avatar URL
+            $user->avatar = $user->avatar ? url($user->avatar) : null;
             return $this->success($user, 'Profile updated successfully', 200);
         } catch (Throwable $e) {
             return $this->fromException($e);
