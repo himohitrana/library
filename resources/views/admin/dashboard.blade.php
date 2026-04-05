@@ -7,7 +7,7 @@
     <div class="value">{{ number_format($stats['books_count']) }}</div>
   </div>
   <div class="stat">
-    <div class="label">Categories</div>
+    <div class="label">Total Categories</div>
     <div class="value">{{ number_format($stats['categories_count']) }}</div>
   </div>
   <div class="stat">
