@@ -3,7 +3,7 @@
 @section('content')
 <div class="grid cols-3">
   <div class="stat">
-    <div class="label">Books</div>
+    <div class="label">Total Books</div>
     <div class="value">{{ number_format($stats['books_count']) }}</div>
   </div>
   <div class="stat">
